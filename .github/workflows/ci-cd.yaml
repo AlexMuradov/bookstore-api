@@ -24,6 +24,10 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set lowercase repository owner
+        run: |
+          echo "OWNER_LC=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Get short commit hash
         id: commit_hash
         run: |
@@ -32,10 +36,8 @@ jobs:
 
       - name: Build and push Docker image
         run: | 
-          docker build -t ghcr.io/${{ github.repository_owner_lc }}/bookstore-api:$TAG .
-          docker push ghcr.io/${{ github.repository_owner_lc }}/bookstore-api:$TAG
-        env:
-          GITHUB_REPOSITORY_OWNER_LC: ${{ toLowerCase(github.repository_owner) }}
+          docker build -t ghcr.io/${{ env.OWNER_LC }}/bookstore-api:$TAG .
+          docker push ghcr.io/${{ env.OWNER_LC }}/bookstore-api:$TAG
 
   Deploy:
     runs-on: ubuntu-latest
@@ -49,6 +51,10 @@ jobs:
 
       - name: Install Helm
         uses: azure/setup-helm@v3
+
+      - name: Set lowercase repository owner
+        run: |
+          echo "OWNER_LC=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Get short commit hash
         id: commit_hash
@@ -64,6 +70,4 @@ jobs:
 
       - name: Deploy with Helm
         run: |
-          helm upgrade --install bookstore-api ./helm --set image.repository=ghcr.io/${{ github.repository_owner_lc }}/bookstore-api --set image.tag=$TAG
-        env:
-          GITHUB_REPOSITORY_OWNER_LC: ${{ toLowerCase(github.repository_owner) }}
+          helm upgrade --install bookstore-api ./helm --set image.repository=ghcr.io/${{ env.OWNER_LC }}/bookstore-api --set image.tag=$TAG
