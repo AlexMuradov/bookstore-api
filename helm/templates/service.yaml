@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-api
+  name: api
   labels:
     app: bookstore-api
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
